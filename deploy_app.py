@@ -10,6 +10,20 @@ url = 'https://stooq.com/q/d/?s=eurusd'
 
 # Send a GET request to the URL
 response = requests.get(url)
+if response.status_code == 200:
+    tables = pd.read_html(response.text)
+    if tables:
+        df = tables[0].dropna()
+        if not df.empty:
+            # Proceed with the rest of the code if the DataFrame is not empty
+            first_row = df.iloc[0]
+            # ... rest of your code ...
+        else:
+            st.error("The DataFrame is empty after dropping NaN values.")
+    else:
+        st.error("No tables found on the webpage.")
+else:
+    st.error(f"Failed to retrieve the webpage. Status code: {response.status_code}")
 
 tables = pd.read_html(response.text)
 table =tables[0]
@@ -33,7 +47,7 @@ def main():
 
     # Get the first row of the eurusd_table_cleaned DataFrame
     # Get the first row of the DataFrame by position
-    first_row = df.iloc[0]
+    # first_row = df.iloc[0]
 
 
     # Assign the values to the variables
