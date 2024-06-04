@@ -10,3 +10,4 @@ xgboost<=1.5.2
 azureml-interpret==1.56.0
 azureml-defaults==1.56.0.post1
 lxml
+requests
