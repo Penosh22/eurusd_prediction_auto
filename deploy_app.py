@@ -7,7 +7,7 @@ import pickle
 import pandas as pd
 
 # URL of the page where the table is located
-url = 'https://stooq.com/q/d/?s=eurusd&i=d&d1=19710104&d2=20240602&l=1'
+url = 'https://stooq.com/q/d/?s=eurusd'
 
 # Use the read_html function to read tables from the webpage
 tables = pd.read_html(url)
