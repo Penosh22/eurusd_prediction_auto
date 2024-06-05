@@ -43,10 +43,10 @@ if st.button("predict"):
             'Change': float(scraped_data[0][7])
         }
 
-        df = pd.DataFrame(data)
+        df = pd.DataFrame([data])
         with open('model.pkl', 'rb') as file:
             model = pickle.load(file)
-        prediction = model.predict(df.iloc[0,['Open','High','Low','Close']])
+        prediction = model.predict(df[['Open','High','Low','Close']])
         st.write(scraped_data)
         st.write(prediction)   
 
