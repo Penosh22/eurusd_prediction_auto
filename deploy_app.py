@@ -7,12 +7,10 @@ import requests
 def download_page(url):
     response = requests.get(url)
     if response.status_code == 200:
-        with open('downloaded_page.html', 'w', encoding='utf-8') as file:
-            file.write(response.text)
+        return response.text
     else:
         st.error(f"Failed to retrieve the webpage. Status code: {response.status_code}")
         return None
-    return 'downloaded_page.html'
 
 # Load the model from the pickle file
 def load_model():
@@ -34,11 +32,11 @@ def main():
     st.write("Fetching data from:", url)
 
     # Download the webpage content
-    file_path = download_page(url)
+    html_content = download_page(url)
     
-    if file_path:
+    if html_content:
         # Parse the HTML content with pandas
-        tables = pd.read_html(file_path)
+        tables = pd.read_html(html_content)
         
         if tables:
             df = tables[0].dropna()
