@@ -15,32 +15,35 @@ def fetch_data():
         st.write(f"Failed to retrieve the webpage. Status code: {response.status_code}")
         return None
 
-def clean_html(html_content):
-    try:
-        soup = BeautifulSoup(html_content, "html.parser")
-        table = soup.find("table", {"id": "f13"})
-        if table:
-            st.write("Found the table in HTML.")
-            return str(table)
-        else:
-            st.write("Table not found in HTML content.")
-            return None
-    except Exception as e:
-        st.write(f"Error cleaning HTML: {e}")
-        return None
-
 def parse_html(html_content):
     try:
-        tables = pd.read_html(StringIO(html_content))  # Use StringIO to wrap the cleaned HTML content
-        if tables:
-            st.write("Successfully parsed HTML content.")
-            df = tables[0]
-            df = df.dropna()
-            st.write("DataFrame after dropping NA:")
-            st.write(df.head())  # Display the first few rows for debugging
-            return df
+        soup = BeautifulSoup(html_content, "html.parser")
+        tbody = soup.find("tbody", {"id": "f13"})
+        if tbody:
+            st.write("Found tbody in HTML.")
+            trs = tbody.find_all("tr")
+            if trs:
+                tds = trs[0].find_all("td")
+                if len(tds) >= 7:
+                    data = {
+                        'Date': tds[1].text,
+                        'Open': float(tds[2].text),
+                        'High': float(tds[3].text),
+                        'Low': float(tds[4].text),
+                        'Close': float(tds[5].text),
+                        'Change': tds[6].text
+                    }
+                    st.write("Extracted data from first row:")
+                    st.write(data)
+                    return data
+                else:
+                    st.write("Not enough data in the first row.")
+                    return None
+            else:
+                st.write("No rows found in tbody.")
+                return None
         else:
-            st.write("No tables found in the HTML content.")
+            st.write("Tbody not found in HTML content.")
             return None
     except Exception as e:
         st.write(f"Error parsing HTML: {e}")
@@ -49,35 +52,19 @@ def parse_html(html_content):
 if st.button("Predict"):
     html_content = fetch_data()
     if html_content:
-        cleaned_html = clean_html(html_content)
-        if cleaned_html:
-            df = parse_html(cleaned_html)
-            if df is not None:
-                first_row = df.iloc[0]
-                st.write("First row of the DataFrame:")
-                st.write(first_row)
+        data_dict = parse_html(html_content)
+        if data_dict:
+            # Convert the dictionary to a DataFrame
+            data = pd.DataFrame([data_dict])
+            
+            st.write("Data to be used for prediction:")
+            st.write(data)
 
-                open_val = first_row['Open']
-                high_val = first_row['High']
-                low_val = first_row['Low']
-                close_val = first_row['Close']
-                        
-                # Create a DataFrame with the values
-                data = pd.DataFrame({
-                    'Open': [open_val],
-                    'High': [high_val],
-                    'Low': [low_val],
-                    'Close': [close_val]
-                })
-
-                st.write("Data to be used for prediction:")
-                st.write(data)
-
-                try:
-                    with open('model.pkl', 'rb') as file:
-                        model = pickle.load(file)
-                    predictions = model.predict(data)
-                    st.write("Prediction:")
-                    st.write(predictions)
-                except Exception as e:
-                    st.write(f"Error loading the model or making predictions: {e}")
+            try:
+                with open('model.pkl', 'rb') as file:
+                    model = pickle.load(file)
+                predictions = model.predict(data[['Open', 'High', 'Low', 'Close']])
+                st.write("Prediction:")
+                st.write(predictions)
+            except Exception as e:
+                st.write(f"Error loading the model or making predictions: {e}")
