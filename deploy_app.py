@@ -47,7 +47,7 @@ if st.button("predict"):
         with open('model.pkl', 'rb') as file:
             model = pickle.load(file)
         prediction = model.predict(df[['Open','High','Low','Close']])
-        st.write(scraped_data)
+        st.write(data)
         st.write(prediction)   
 
 
