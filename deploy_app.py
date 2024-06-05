@@ -23,6 +23,12 @@ async def scrape_data(url):
     tables = pd.read_html(content)
     return tables
 
+# Wrapper function to run asyncio tasks
+def run_asyncio_task(task):
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    return loop.run_until_complete(task)
+
 # Load the model from the pickle file
 def load_model():
     with open('model.pkl', 'rb') as file:
@@ -43,9 +49,7 @@ def main():
     st.write("Fetching data from:", url)
 
     # Scrape data from the URL
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    tables = loop.run_until_complete(scrape_data(url))
+    tables = run_asyncio_task(scrape_data(url))
     
     if tables:
         df = tables[0].dropna()
