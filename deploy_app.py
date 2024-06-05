@@ -7,7 +7,7 @@ if st.button("Predict"):
     url = 'https://stooq.com/q/d/?s=eurusd'
     response = requests.get(url)
     if response.status_code == 200:
-        html_content = response.text
+        tables =pd.read_html(response.text)
         df = tables[0].dropna()
         first_row = df.iloc[0]
         st.write(first_row)
