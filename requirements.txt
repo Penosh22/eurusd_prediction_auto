@@ -12,4 +12,4 @@ azureml-defaults==1.56.0.post1
 lxml
 requests
 joblib
-selenium
+pyppeteer
