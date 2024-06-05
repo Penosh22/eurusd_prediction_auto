@@ -1,33 +1,18 @@
 import streamlit as st
 import pandas as pd
-import joblib
 import pickle
-import asyncio
-from pyppeteer import launch
+import requests
 
-# Function to create a headless browser with Pyppeteer
-async def create_browser():
-    browser = await launch(headless=True, args=["--no-sandbox", "--disable-dev-shm-usage"])
-    return browser
-
-# Function to scrape the data
-async def scrape_data(url):
-    browser = await create_browser()
-    page = await browser.newPage()
-    await page.goto(url)
-    await page.waitForSelector('table')  # Ensure the table is loaded
-    content = await page.content()
-    await browser.close()
-    
-    # Parse the content with pandas
-    tables = pd.read_html(content)
-    return tables
-
-# Wrapper function to run asyncio tasks
-def run_asyncio_task(task):
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    return loop.run_until_complete(task)
+# Function to download the webpage content
+def download_page(url):
+    response = requests.get(url)
+    if response.status_code == 200:
+        with open('downloaded_page.html', 'w', encoding='utf-8') as file:
+            file.write(response.text)
+    else:
+        st.error(f"Failed to retrieve the webpage. Status code: {response.status_code}")
+        return None
+    return 'downloaded_page.html'
 
 # Load the model from the pickle file
 def load_model():
@@ -48,43 +33,47 @@ def main():
     url = 'https://stooq.com/q/d/?s=eurusd'
     st.write("Fetching data from:", url)
 
-    # Scrape data from the URL
-    tables = run_asyncio_task(scrape_data(url))
+    # Download the webpage content
+    file_path = download_page(url)
     
-    if tables:
-        df = tables[0].dropna()
-        if not df.empty:
-            first_row = df.iloc[0]
-            
-            # Assign the values to the variables
-            open_val = first_row['Open']
-            high_val = first_row['High']
-            low_val = first_row['Low']
-            close_val = first_row['Close']
-            
-            # Create a DataFrame with the values
-            data = pd.DataFrame({
-                'Open': [open_val],
-                'High': [high_val],
-                'Low': [low_val],
-                'Close': [close_val]
-            })
+    if file_path:
+        # Parse the HTML content with pandas
+        tables = pd.read_html(file_path)
+        
+        if tables:
+            df = tables[0].dropna()
+            if not df.empty:
+                first_row = df.iloc[0]
+                
+                # Assign the values to the variables
+                open_val = first_row['Open']
+                high_val = first_row['High']
+                low_val = first_row['Low']
+                close_val = first_row['Close']
+                
+                # Create a DataFrame with the values
+                data = pd.DataFrame({
+                    'Open': [open_val],
+                    'High': [high_val],
+                    'Low': [low_val],
+                    'Close': [close_val]
+                })
 
-            # Display the scraped data
-            st.write("Using the following data for prediction:")
-            st.write(first_row)
+                # Display the scraped data
+                st.write("Using the following data for prediction:")
+                st.write(first_row)
 
-            # Load the model
-            model = load_model()
+                # Load the model
+                model = load_model()
 
-            if st.button("Predict"):
-                predictions = make_predictions(model, data)
-                st.write("Prediction:")
-                st.write(predictions)
+                if st.button("Predict"):
+                    predictions = make_predictions(model, data)
+                    st.write("Prediction:")
+                    st.write(predictions)
+            else:
+                st.error("The DataFrame is empty after dropping NaN values.")
         else:
-            st.error("The DataFrame is empty after dropping NaN values.")
-    else:
-        st.error("No tables found on the webpage.")
+            st.error("No tables found in the downloaded HTML content.")
 
 if __name__ == "__main__":
     main()
