@@ -34,13 +34,13 @@ if st.button("predict"):
             break
         
         data = {
-            'Date': scraped_data[0][1].text,
-            'Open': float(scraped_data[0][2].text),
-            'High': float(scraped_data[0][3].text),
-            'Low': float(scraped_data[0][4].text),
-            'Close': float(scraped_data[0][5].text),
-            '%Change': scraped_data[0][6].text,
-            'Change': float(scraped_data[0][7].text)
+            'Date': scraped_data[0][1],
+            'Open': float(scraped_data[0][2]),
+            'High': float(scraped_data[0][3]),
+            'Low': float(scraped_data[0][4]),
+            'Close': float(scraped_data[0][5]),
+            '%Change': scraped_data[0][6],
+            'Change': float(scraped_data[0][7])
         }
 
         df = pd.DataFrame(data)
