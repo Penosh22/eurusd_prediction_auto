@@ -6,7 +6,7 @@ import time
 
 if st.button("Predict"):
     url = 'https://stooq.com/q/d/?s=eurusd'
-    response = request.get(url)
+    response = requests.get(url)
     if response.status_code == 200:
         tables =pd.read_html(response.text)
         df = tables[0]
