@@ -2,34 +2,25 @@ import streamlit as st
 import pandas as pd
 import joblib
 import pickle
-import time
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
+import asyncio
+from pyppeteer import launch
 
-# Function to create a headless Selenium WebDriver
-def create_webdriver():
-    options = Options()
-    options.add_argument("--headless")
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("--disable-gpu")
-    options.add_argument("--disable-software-rasterizer")
-    options.add_argument("--enable-logging")
-    options.add_argument("--v=1")
-    options.add_argument("--disable-setuid-sandbox")
-    driver = webdriver.Chrome(options=options)
-    return driver
+# Function to create a headless browser with Pyppeteer
+async def create_browser():
+    browser = await launch(headless=True, args=["--no-sandbox", "--disable-dev-shm-usage"])
+    return browser
 
 # Function to scrape the data
-def scrape_data(url):
-    driver = create_webdriver()
-    driver.get(url)
-    time.sleep(5)  # Allow time for the page to load
+async def scrape_data(url):
+    browser = await create_browser()
+    page = await browser.newPage()
+    await page.goto(url)
+    await page.waitForSelector('table')  # Ensure the table is loaded
+    content = await page.content()
+    await browser.close()
     
-    # Scrape the data table from the page
-    tables = pd.read_html(driver.page_source)
-    driver.quit()  # Close the WebDriver
+    # Parse the content with pandas
+    tables = pd.read_html(content)
     return tables
 
 # Load the model from the pickle file
@@ -52,7 +43,10 @@ def main():
     st.write("Fetching data from:", url)
 
     # Scrape data from the URL
-    tables = scrape_data(url)
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    tables = loop.run_until_complete(scrape_data(url))
+    
     if tables:
         df = tables[0].dropna()
         if not df.empty:
