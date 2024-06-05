@@ -2,14 +2,16 @@ import streamlit as st
 import pandas as pd
 import pickle
 import requests
-import time
+from io import StringIO
 
 if st.button("Predict"):
     url = 'https://stooq.com/q/d/?s=eurusd'
     response = requests.get(url)
     if response.status_code == 200:
-        tables =pd.read_html(response.text)
+        html_content = response.text
+        tables = pd.read_html(StringIO(html_content))  # Use StringIO to wrap the HTML content
         df = tables[0]
+        df = df.dropna()
         first_row = df.iloc[0]
         st.write(first_row)
     else:
