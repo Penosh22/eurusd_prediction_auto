@@ -2,65 +2,69 @@ import streamlit as st
 import pandas as pd
 import pickle
 import requests
-from io import StringIO
+import time
 
-def fetch_data():
-    url = 'https://stooq.com/q/d/?s=eurusd'
+# Load model function
+def load_model():
+    with open('model.pkl', 'rb') as file:
+        model = pickle.load(file)
+    return model
+
+# Fetch data function
+def fetch_data(url):
     response = requests.get(url)
     if response.status_code == 200:
-        st.write("Successfully fetched data from the website.")
         return response.text
     else:
-        st.write(f"Failed to retrieve the webpage. Status code: {response.status_code}")
+        st.error(f"Failed to retrieve the webpage. Status code: {response.status_code}")
         return None
 
+# Parse HTML and extract data
 def parse_html(html_content):
     try:
-        tables = pd.read_html(StringIO(html_content))  # Use StringIO to wrap the HTML content
+        tables = pd.read_html(html_content)
         if tables:
-            st.write("Successfully parsed HTML content.")
-            df = tables[0]
-            df = df.dropna()
-            st.write("DataFrame after dropping NA:")
-            st.write(df.head())  # Display the first few rows for debugging
+            df = tables[0].dropna()
             return df
         else:
-            st.write("No tables found in the HTML content.")
+            st.error("No tables found in the HTML content.")
             return None
-    except Exception as e:
-        st.write(f"Error parsing HTML: {e}")
+    except ValueError as e:
+        st.error(f"Error parsing HTML content: {e}")
         return None
 
-if st.button("Predict"):
-    html_content = fetch_data()
-    if html_content:
-        df = parse_html(html_content)
-        if df is not None:
-            first_row = df.iloc[0]
-            st.write("First row of the DataFrame:")
-            st.write(first_row)
+# Main function
+def main():
+    st.title("EUR/USD Prediction")
+    if st.button("Predict"):
+        url = 'https://stooq.com/q/d/?s=eurusd'
+        time.sleep(5)  # Replace wait with sleep
 
-            open_val = first_row['Open']
-            high_val = first_row['High']
-            low_val = first_row['Low']
-            close_val = first_row['Close']
-                    
-            # Create a DataFrame with the values
-            data = pd.DataFrame({
-                'Open': [open_val],
-                'High': [high_val],
-                'Low': [low_val],
-                'Close': [close_val]
-            })
+        html_content = fetch_data(url)
+        if html_content:
+            df = parse_html(html_content)
+            if df is not None:
+                first_row = df.iloc[0]
+                st.write(first_row)
 
-            st.write("Data to be used for prediction:")
-            st.write(data)
+                open_val = first_row['Otwarcie']
+                high_val = first_row['Najwyższy']
+                low_val = first_row['Najniższy']
+                close_val = first_row['Zamknięcie']
 
-            try:
-                with open('model.pkl', 'rb') as file:
-                    model = pickle.load(file)
+                # Create a DataFrame with the values
+                data = pd.DataFrame({
+                    'Open': [open_val],
+                    'High': [high_val],
+                    'Low': [low_val],
+                    'Close': [close_val]
+                })
+
+                # Load model and make predictions
+                model = load_model()
                 predictions = model.predict(data)
                 st.write("Prediction:")
                 st.write(predictions)
-            except Exception as e:
-                st.write(f"Error loading the model or making predictions: {e}")
+
+if __name__ == "__main__":
+    main()
