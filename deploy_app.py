@@ -8,6 +8,7 @@ def fetch_data():
     url = 'https://stooq.com/q/d/?s=eurusd'
     response = requests.get(url)
     if response.status_code == 200:
+        st.write("Successfully fetched data from the website.")
         html_content = response.text
         return html_content
     else:
@@ -18,8 +19,11 @@ def parse_html(html_content):
     try:
         tables = pd.read_html(StringIO(html_content))  # Use StringIO to wrap the HTML content
         if tables:
+            st.write("Successfully parsed HTML content.")
             df = tables[0]
             df = df.dropna()
+            st.write("DataFrame after dropping NA:")
+            st.write(df.head())  # Display the first few rows for debugging
             return df
         else:
             st.write("No tables found in the HTML content.")
@@ -34,6 +38,7 @@ if st.button("Predict"):
         df = parse_html(html_content)
         if df is not None:
             first_row = df.iloc[0]
+            st.write("First row of the DataFrame:")
             st.write(first_row)
 
             open_val = first_row['Open']
@@ -49,8 +54,14 @@ if st.button("Predict"):
                 'Close': [close_val]
             })
 
-            with open('model.pkl', 'rb') as file:
-                model = pickle.load(file)
-            predictions = model.predict(data)
-            st.write("Prediction:")
-            st.write(predictions)
+            st.write("Data to be used for prediction:")
+            st.write(data)
+
+            try:
+                with open('model.pkl', 'rb') as file:
+                    model = pickle.load(file)
+                predictions = model.predict(data)
+                st.write("Prediction:")
+                st.write(predictions)
+            except Exception as e:
+                st.write(f"Error loading the model or making predictions: {e}")
