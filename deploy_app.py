@@ -2,56 +2,66 @@ import streamlit as st
 import pandas as pd
 import pickle
 import requests
-import time
+from io import StringIO
+from bs4 import BeautifulSoup
 
-# Load model function
-def load_model():
-    with open('model.pkl', 'rb') as file:
-        model = pickle.load(file)
-    return model
-
-# Fetch data function
-def fetch_data(url):
+def fetch_data():
+    url = 'https://stooq.com/q/d/?s=eurusd'
     response = requests.get(url)
     if response.status_code == 200:
+        st.write("Successfully fetched data from the website.")
         return response.text
     else:
-        st.error(f"Failed to retrieve the webpage. Status code: {response.status_code}")
+        st.write(f"Failed to retrieve the webpage. Status code: {response.status_code}")
         return None
 
-# Parse HTML and extract data
+def clean_html(html_content):
+    try:
+        soup = BeautifulSoup(html_content, "html.parser")
+        table = soup.find("table", {"id": "f13"})
+        if table:
+            st.write("Found the table in HTML.")
+            return str(table)
+        else:
+            st.write("Table not found in HTML content.")
+            return None
+    except Exception as e:
+        st.write(f"Error cleaning HTML: {e}")
+        return None
+
 def parse_html(html_content):
     try:
-        tables = pd.read_html(html_content)
+        tables = pd.read_html(StringIO(html_content))  # Use StringIO to wrap the cleaned HTML content
         if tables:
-            df = tables[0].dropna()
+            st.write("Successfully parsed HTML content.")
+            df = tables[0]
+            df = df.dropna()
+            st.write("DataFrame after dropping NA:")
+            st.write(df.head())  # Display the first few rows for debugging
             return df
         else:
-            st.error("No tables found in the HTML content.")
+            st.write("No tables found in the HTML content.")
             return None
-    except ValueError as e:
-        st.error(f"Error parsing HTML content: {e}")
+    except Exception as e:
+        st.write(f"Error parsing HTML: {e}")
         return None
 
-# Main function
-def main():
-    st.title("EUR/USD Prediction")
-    if st.button("Predict"):
-        url = 'https://stooq.com/q/d/?s=eurusd'
-        time.sleep(5)  # Replace wait with sleep
-
-        html_content = fetch_data(url)
-        if html_content:
-            df = parse_html(html_content)
+if st.button("Predict"):
+    html_content = fetch_data()
+    if html_content:
+        cleaned_html = clean_html(html_content)
+        if cleaned_html:
+            df = parse_html(cleaned_html)
             if df is not None:
                 first_row = df.iloc[0]
+                st.write("First row of the DataFrame:")
                 st.write(first_row)
 
-                open_val = first_row['Otwarcie']
-                high_val = first_row['Najwyższy']
-                low_val = first_row['Najniższy']
-                close_val = first_row['Zamknięcie']
-
+                open_val = first_row['Open']
+                high_val = first_row['High']
+                low_val = first_row['Low']
+                close_val = first_row['Close']
+                        
                 # Create a DataFrame with the values
                 data = pd.DataFrame({
                     'Open': [open_val],
@@ -60,11 +70,14 @@ def main():
                     'Close': [close_val]
                 })
 
-                # Load model and make predictions
-                model = load_model()
-                predictions = model.predict(data)
-                st.write("Prediction:")
-                st.write(predictions)
+                st.write("Data to be used for prediction:")
+                st.write(data)
 
-if __name__ == "__main__":
-    main()
+                try:
+                    with open('model.pkl', 'rb') as file:
+                        model = pickle.load(file)
+                    predictions = model.predict(data)
+                    st.write("Prediction:")
+                    st.write(predictions)
+                except Exception as e:
+                    st.write(f"Error loading the model or making predictions: {e}")
