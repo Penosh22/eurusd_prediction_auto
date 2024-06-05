@@ -5,66 +5,51 @@ import requests
 from io import StringIO
 from bs4 import BeautifulSoup
 
-def fetch_data():
+st.title("EURUSD Prediction")
+if st.button("predict"):
+
+    # URL of the page to scrape
     url = 'https://stooq.com/q/d/?s=eurusd'
+
+    # Send a GET request to the URL
     response = requests.get(url)
+
+    # Check if the request was successful
     if response.status_code == 200:
-        st.write("Successfully fetched data from the website.")
-        return response.text
+        # Parse the HTML content
+        soup = BeautifulSoup(response.text, 'html.parser')
+        
+        # Find the table with the data
+        table = soup.find('tbody', {'style': 'background-color:ffffff'})
+        
+        # Initialize a list to store the scraped data
+        scraped_data = []
+        
+        # Iterate over each row in the table
+        for row in table.find_all('tr'):
+            # Extract the text from each cell in the row
+            cells = [cell.text.strip() for cell in row.find_all('td')]
+            # Append the list of cell values to the scraped_data list
+            scraped_data.append(cells)
+            break
+        
+        data = {
+            'Date': scraped_data[1].text,
+            'Open': float(scraped_data[2].text),
+            'High': float(scraped_data[3].text),
+            'Low': float(scraped_data[4].text),
+            'Close': float(scraped_data[5].text),
+            '%Change': scraped_data[6].text,
+            'Change': float(scraped_data[7].text)
+        }
+
+        df = pd.DataFrame(data)
+        with open('model.pkl', 'rb') as file:
+            model = pickle.load(file)
+        prediction = model.predict(df.iloc[0,['Open','High','Low','Close']])
+        st.write(scraped_data)
+        st.write(prediction)   
+
+
     else:
-        st.write(f"Failed to retrieve the webpage. Status code: {response.status_code}")
-        return None
-
-def parse_html(html_content):
-    try:
-        soup = BeautifulSoup(html_content, "html.parser")
-        tbody = soup.find("tbody", {"id": "f13"})
-        if tbody:
-            st.write("Found tbody in HTML.")
-            trs = tbody.find_all("tr")
-            if trs:
-                tds = trs[0].find_all("td")
-                if len(tds) >= 7:
-                    data = {
-                        'Date': tds[1].text,
-                        'Open': float(tds[2].text),
-                        'High': float(tds[3].text),
-                        'Low': float(tds[4].text),
-                        'Close': float(tds[5].text),
-                        'Change': tds[6].text
-                    }
-                    st.write("Extracted data from first row:")
-                    st.write(data)
-                    return data
-                else:
-                    st.write("Not enough data in the first row.")
-                    return None
-            else:
-                st.write("No rows found in tbody.")
-                return None
-        else:
-            st.write("Tbody not found in HTML content.")
-            return None
-    except Exception as e:
-        st.write(f"Error parsing HTML: {e}")
-        return None
-
-if st.button("Predict"):
-    html_content = fetch_data()
-    if html_content:
-        data_dict = parse_html(html_content)
-        if data_dict:
-            # Convert the dictionary to a DataFrame
-            data = pd.DataFrame([data_dict])
-            
-            st.write("Data to be used for prediction:")
-            st.write(data)
-
-            try:
-                with open('model.pkl', 'rb') as file:
-                    model = pickle.load(file)
-                predictions = model.predict(data[['Open', 'High', 'Low', 'Close']])
-                st.write("Prediction:")
-                st.write(predictions)
-            except Exception as e:
-                st.write(f"Error loading the model or making predictions: {e}")
+        print(f'Failed to retrieve the webpage. Status code: {response.status_code}')
