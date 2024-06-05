@@ -6,10 +6,10 @@ import time
 
 if st.button("Predict"):
     url = 'https://stooq.com/q/d/?s=eurusd'
-    html_content = fetch_data(url)
+    response = request.get(url)
     if response.status_code == 200:
         tables =pd.read_html(response.text)
-        df = parse_html(html_content)
+        df = tables[0]
         first_row = df.iloc[0]
         st.write(first_row)
     else:
