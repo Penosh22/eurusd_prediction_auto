@@ -33,20 +33,44 @@ if st.button("predict"):
             scraped_data.append(cells)
             break
         
-        data = {
-            'Date': scraped_data[0][1],
-            'Open': float(scraped_data[0][2]),
-            'High': float(scraped_data[0][3]),
-            'Low': float(scraped_data[0][4]),
-            'Close': float(scraped_data[0][5]),
-            '%Change': scraped_data[0][6],
-            'Change': float(scraped_data[0][7])
+        data1 = {
+            'Date1': scraped_data[0][1],
+            'Open1': float(scraped_data[0][2]),
+            'High1': float(scraped_data[0][3]),
+            'Low1': float(scraped_data[0][4]),
+            'Close1': float(scraped_data[0][5]),
+            '%Change1': scraped_data[0][6],
+            'Change1': float(scraped_data[0][7])
         }
+        data2 = {
+            'Date2': scraped_data[1][1],
+            'Open2': float(scraped_data[1][2]),
+            'High2': float(scraped_data[1][3]),
+            'Low2': float(scraped_data[1][4]),
+            'Close2': float(scraped_data[1][5]),
+            '%Change2': scraped_data[1][6],
+            'Change2': float(scraped_data[1][7])
+        }
+        data = {
+            'Date': scraped_data[1][1],
+            'Open': float(scraped_data[1][2]),
+            'High': float(scraped_data[1][3]),
+            'Low': float(scraped_data[1][4]),
+            'Close': float(scraped_data[1][5]),
+            'Return': (data2['Close2']-data1['Close1'])/data1['Close1'],
+            'Open_Close': data2['Close2']-data2['Open2']
+        }
+        if data['Open_Close'] < 0 :
+            data["High_Low"] = data2['Low2']-data2['High2']
+        else:
+            data["High_Low"] = data2['High2']-data2['Low2']
+
+
 
         df = pd.DataFrame([data])
         with open('model.pkl', 'rb') as file:
             model = pickle.load(file)
-        prediction = model.predict(df[['Open','High','Low','Close']])
+        prediction = model.predict(df[['Open','High','Low','Close','Return','Open_Close','High_Low']])
         st.write(data)
         st.write(prediction)   
 
