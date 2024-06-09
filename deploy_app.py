@@ -24,14 +24,16 @@ if st.button("predict"):
         
         # Initialize a list to store the scraped data
         scraped_data = []
-        
+        stop_level = 0
         # Iterate over each row in the table
         for row in table.find_all('tr'):
             # Extract the text from each cell in the row
             cells = [cell.text.strip() for cell in row.find_all('td')]
             # Append the list of cell values to the scraped_data list
-            scraped_data.append(cells)
-            break
+            scraped_data.insert(0,cells)
+            stop_level +=1
+            if stop_level == 2:
+                break
         
         data1 = {
             'Date1': scraped_data[0][1],
@@ -58,13 +60,9 @@ if st.button("predict"):
             'Low': float(scraped_data[1][4]),
             'Close': float(scraped_data[1][5]),
             'Return': (data2['Close2']-data1['Close1'])/data1['Close1'],
-            'Open_Close': data2['Close2']-data2['Open2']
+            'Open_Close': data2['Close2']-data2['Open2'],
+            'High_Low': data2['High2'] - data2['Low2'] if data2['Close2'] >= data2['Open2'] else data2['Low2'] - data2['High2']
         }
-        if data['Open_Close'] < 0 :
-            data["High_Low"] = data2['Low2']-data2['High2']
-        else:
-            data["High_Low"] = data2['High2']-data2['Low2']
-
 
 
         df = pd.DataFrame([data])
