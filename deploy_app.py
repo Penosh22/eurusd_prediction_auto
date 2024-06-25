@@ -45,7 +45,7 @@ if st.button("predict"):
     prediction = model.predict(df[['Open','High','Low','Close','Return','Open_Close','High_Low']])
    
     st.write(data)
-    st.write(df.tail(5))
+    st.write(data1,data2)
     st.write(prediction)   
 
         
