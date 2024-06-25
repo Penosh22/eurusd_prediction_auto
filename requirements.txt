@@ -14,3 +14,4 @@ requests
 joblib
 pyppeteer
 bs4
+git+https://github.com/rongardF/tvdatafeed.git
