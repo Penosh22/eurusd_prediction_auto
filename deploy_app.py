@@ -11,7 +11,7 @@ if st.button("predict"):
     eur_usd_data = tv.get_hist(symbol='EURUSD', exchange='OANDA', interval=Interval.in_daily, n_bars=100)
     df =pd.DataFrame(eur_usd_data)
     df = df.drop(df.tail(1).index)
-    df = df.reset_index(inplace=True)
+    df.reset_index(inplace=True)
     data1 = {
         'Date1': df.iloc[-2]['datetime'],
         'Open1': df.iloc[-2]['open'],
