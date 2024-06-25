@@ -14,4 +14,3 @@ requests
 joblib
 pyppeteer
 bs4
-tvDatafeed
