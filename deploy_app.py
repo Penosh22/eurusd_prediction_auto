@@ -9,7 +9,7 @@ st.title("EURUSD Prediction")
 if st.button("predict"):
 
     # URL of the page to scrape
-    url = "https://stooq.com/q/d/?s=eurusd"
+    url = 'https://stooq.com/q/d/?s=eurusd'
 
     # Send a GET request to the URL
     response = requests.get(url)
@@ -76,3 +76,4 @@ if st.button("predict"):
 
     else:
         print(f'Failed to retrieve the webpage. Status code: {response.status_code}')
+        
