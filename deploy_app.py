@@ -7,12 +7,13 @@ from bs4 import BeautifulSoup
 
 st.title("EURUSD Prediction")
 if st.button("predict"):
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
 
     # URL of the page to scrape
     url = 'https://stooq.com/q/d/?s=eurusd'
 
     # Send a GET request to the URL
-    response = requests.get(url)
+    response = requests.get(url,headers=headers)
 
     # Check if the request was successful
     if response.status_code == 200:
