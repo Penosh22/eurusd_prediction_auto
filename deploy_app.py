@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 from tvDatafeed import TvDatafeed, Interval
 st.title("EURUSD Prediction")
 if st.button("predict"):
+    tv = TvDatafeed()
     eur_usd_data = tv.get_hist(symbol='EURUSD', exchange='OANDA', interval=Interval.in_daily, n_bars=100)
     df =pd.DataFrame(eur_usd_data)
     df = df.drop(df.tail(1).index)
