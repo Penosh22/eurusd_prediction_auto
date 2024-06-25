@@ -22,7 +22,6 @@ dependencies:
 - prophet==1.1.4
 - holidays==0.48
 - psutil==5.9.3
-- tvdatafeed==2.1.0
 channels:
 - anaconda
 - conda-forge
