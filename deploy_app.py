@@ -10,7 +10,7 @@ if st.button("predict"):
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
 
     # URL of the page to scrape
-    url = 'https://stooq.com/q/d/?s=eurusd'
+    url = 'https://stooq.com/q/d/?s=eurusd&i=d&l=1'
 
     # Send a GET request to the URL
     response = requests.get(url,headers=headers)
@@ -78,17 +78,5 @@ if st.button("predict"):
     else:
         print(f'Failed to retrieve the webpage. Status code: {response.status_code}')
         
-st.session_state['answer'] = ''
 
-st.write(st.session_state)
-
-realans = ['', 'abc', 'edf']
-
-if  st.session_state['answer'] in realans:
-    answerStat = "correct"
-elif st.session_state['answer'] not in realans:
-    answerStat = "incorrect"
-
-st.write(st.session_state)
-st.write(answerStat)
         
