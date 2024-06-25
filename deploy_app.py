@@ -39,13 +39,13 @@ if st.button("predict"):
     }
 
 
-    df = pd.DataFrame([data])
+    df_predict = pd.DataFrame([data])
     with open('model.pkl', 'rb') as file:
         model = pickle.load(file)
-    prediction = model.predict(df[['Open','High','Low','Close','Return','Open_Close','High_Low']])
+    prediction = model.predict(df_predict[['Open','High','Low','Close','Return','Open_Close','High_Low']])
    
     st.write(data)
-    st.write(data1,data2)
+    st.write(df.tail(5)
     st.write(prediction)   
 
         
