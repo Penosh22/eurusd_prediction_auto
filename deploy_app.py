@@ -10,9 +10,8 @@ if st.button("predict"):
     tv = TvDatafeed()
     eur_usd_data = tv.get_hist(symbol='EURUSD', exchange='OANDA', interval=Interval.in_daily, n_bars=100)
     df =pd.DataFrame(eur_usd_data)
-    df.reset_index(inplace=True)
     data1 = {
-        'Date1': df.iloc[-3]['datetime'],
+        'Date1': df.iloc[-3].name,
         'Open1': df.iloc[-3]['open'],
         'High1': df.iloc[-3]['high'],
         'Low1': df.iloc[-3]['low'],
@@ -21,14 +20,14 @@ if st.button("predict"):
         
         
     data2 = {
-        'Date2': df.iloc[-2]['datetime'],
+        'Date2': df.iloc[-2].name,
         'Open2': df.iloc[-2]['open'],
         'High2': df.iloc[-2]['high'],
         'Low2': df.iloc[-2]['low'],
         'Close2': df.iloc[-2]['close']
     }
     data = {
-        'Date': df.iloc[-2]['datetime'],
+        'Date': df.iloc[-2].name,
         'Open': df.iloc[-2]['open'],
         'High': df.iloc[-2]['high'],
         'Low': df.iloc[-2]['low'],
@@ -45,9 +44,10 @@ if st.button("predict"):
     prediction = model.predict(df_predict[['Open','High','Low','Close','Return','Open_Close','High_Low']])
    
     st.write(data)
-    st.write(df.tail(5))
+    st.write(data1,data2)
     st.write(prediction)   
 
         
 
         
+
