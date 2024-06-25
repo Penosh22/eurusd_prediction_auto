@@ -77,7 +77,7 @@ if st.button("predict"):
     else:
         print(f'Failed to retrieve the webpage. Status code: {response.status_code}')
         
-st.session_state['answer'] = ''!
+st.session_state['answer'] = ''
 
 st.write(st.session_state)
 
