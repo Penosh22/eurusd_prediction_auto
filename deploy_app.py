@@ -10,30 +10,29 @@ if st.button("predict"):
     tv = TvDatafeed()
     eur_usd_data = tv.get_hist(symbol='EURUSD', exchange='OANDA', interval=Interval.in_daily, n_bars=100)
     df =pd.DataFrame(eur_usd_data)
-    df = df.drop(df.index[-1], axis=0)
     df.reset_index(inplace=True)
     data1 = {
-        'Date1': df.iloc[-2]['datetime'],
-        'Open1': df.iloc[-2]['open'],
-        'High1': df.iloc[-2]['high'],
-        'Low1': df.iloc[-2]['low'],
-        'Close1': df.iloc[-2]['close']
+        'Date1': df.iloc[-3]['datetime'],
+        'Open1': df.iloc[-3]['open'],
+        'High1': df.iloc[-3]['high'],
+        'Low1': df.iloc[-3]['low'],
+        'Close1': df.iloc[-3]['close']
     }
         
         
     data2 = {
-        'Date2': df.iloc[-1]['datetime'],
-        'Open2': df.iloc[-1]['open'],
-        'High2': df.iloc[-1]['high'],
-        'Low2': df.iloc[-1]['low'],
-        'Close2': df.iloc[-1]['close']
+        'Date2': df.iloc[-2]['datetime'],
+        'Open2': df.iloc[-2]['open'],
+        'High2': df.iloc[-2]['high'],
+        'Low2': df.iloc[-2]['low'],
+        'Close2': df.iloc[-2]['close']
     }
     data = {
-        'Date': df.iloc[-1]['datetime'],
-        'Open': df.iloc[-1]['open'],
-        'High': df.iloc[-1]['high'],
-        'Low': df.iloc[-1]['low'],
-        'Close': df.iloc[-1]['close'],
+        'Date': df.iloc[-2]['datetime'],
+        'Open': df.iloc[-2]['open'],
+        'High': df.iloc[-2]['high'],
+        'Low': df.iloc[-2]['low'],
+        'Close': df.iloc[-2]['close'],
         'Return': (data2['Close2']-data1['Close1'])/data1['Close1'],
         'Open_Close': data2['Close2']-data2['Open2'],
         'High_Low': data2['High2'] - data2['Low2'] if data2['Close2'] >= data2['Open2'] else data2['Low2'] - data2['High2']
